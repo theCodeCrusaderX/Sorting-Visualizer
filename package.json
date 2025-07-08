@@ -1,0 +1,14 @@
+{
+  "name": "sorting-visualiser",
+  "version": "1.0.0",
+  "description": "A visualizer for sorting algorithms built with HTML, CSS, JavaScript, and Node.js.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "author": "",
+  "license": "ISC"
+}

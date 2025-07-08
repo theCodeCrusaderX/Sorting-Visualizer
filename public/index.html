@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sorting Visualizer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Sorting Visualizer</h1>
+      <canvas id="sortingCanvas" width="1200" height="400"></canvas>
+      <label for="arraySize">Enter array size:</label>
+      <input
+        type="number"
+        id="arraySize"
+        min="1"
+        max="30"
+        placeholder="e.g., 10"
+      />
+      <button id="generateBtn">Generate Array</button>
+      <div class="controls">
+        <button id="bubble-sort">Bubble Sort</button>
+        <button id="selection-sort">Selection Sort</button>
+        <button id="insertion-sort">Insertion Sort</button>
+        <button id="merge-sort">Merge Sort</button>
+        <button id="quick-sort">Quick Sort</button>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
