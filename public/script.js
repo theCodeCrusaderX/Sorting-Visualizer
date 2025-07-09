@@ -363,6 +363,15 @@ document.getElementById("generateBtn").addEventListener("click", function () {
   }
 });
 
+document.getElementById("speed").addEventListener("input", function () {
+  if (isSorting) {
+    alert("Cannot change speed while sorting is in progress.");
+    return;
+  }
+
+  delay = parseFloat(this.value) * 1000; // Convert to milliseconds
+});
+
 document.getElementById("bubble-sort").addEventListener("click", function () {
   if (!isSorting) {
     bubbleSort();

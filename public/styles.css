@@ -37,6 +37,8 @@ canvas {
 label {
   font-weight: 500;
   margin-right: 8px;
+  margin-left: 18px;
+  color: white;
 }
 
 input[type="number"] {
