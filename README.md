@@ -1,3 +1,7 @@
+# Live Link
+https://sorting-visualizer-ten-inky.vercel.app/
+
+
 # Sorting Visualizer
 
 This project is a sorting visualizer that demonstrates various sorting algorithms through a visual representation. Users can interact with the visualizer to see how different algorithms sort an array of numbers.
