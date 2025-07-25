@@ -1,25 +1,29 @@
-const canvas = document.getElementById("sortingCanvas");  // Get the canvas element
-const ctx = canvas.getContext("2d");  // Get the 2D drawing context
+const canvas = document.getElementById("sortingCanvas"); // Get the canvas element
+const ctx = canvas.getContext("2d"); // Get the 2D drawing context
+const explanationDiv = document.getElementById("ai-explanation"); // Get the explanation div
 
 let arrSize = 10;
 let array = [];
 let isSorting = false;
 let delay = 800; // Delay in milliseconds for visualization
+let hasShownLoadingMessage = false; // Track if loading message has been shown
 
 function generateArray() {
+  if (isSorting) return; // Prevent generating a new array while sorting
+  hasShownLoadingMessage = false;
 
-  if (isSorting) return;  // Prevent generating a new array while sorting
 
-  array = [];  // Reset the array
-  
+  array = []; // Reset the array
+
   for (let i = 0; i < arrSize; i++) {
     array.push(Math.floor(Math.random() * 100)); // Random numbers between 1 and 100
   }
   drawArray();
 }
 
-function drawArray(highlight = {}) {  //if no val pass to highlight, it will be empty obj
-  ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
+function drawArray(highlight = {}) {
+  //if no val pass to highlight, it will be empty obj
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 
   ctx.font = "14px Arial";
   ctx.textAlign = "center";
@@ -47,60 +51,102 @@ function drawArray(highlight = {}) {  //if no val pass to highlight, it will be 
   }
 }
 
+// =================================================================
+//  AI INTEGRATION (Calling backend server)
+// =================================================================
 
+async function getExplanation(details) {
+  // Get the checkbox element
+  const aiToggle = document.getElementById("enableAi");
+  console.log("AI Toggle checked:", aiToggle.checked);
+
+  // If the checkbox is not checked, clear the text and stop
+  if (!aiToggle.checked) {
+    explanationDiv.innerHTML = "<p>AI explanations are disabled.</p>";
+    return; // Prevents the API call
+  }
+
+  const prompt = `Explain this step of the ${
+    details.algorithm
+  } algorithm in one simple sentence for a visualizer.
+- Step: ${details.step}.
+- Array State: [${details.arrayState.join(", ")}].
+- Details: ${details.context}`;
+
+  // Show loading message only on first time
+  if (!hasShownLoadingMessage) {
+    explanationDiv.innerHTML = "<p><em>Generating explanation...</em></p>";
+    hasShownLoadingMessage = true;
+  }
+
+  try {
+    const response = await fetch("http://localhost:3000/get-explanation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt: prompt }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    explanationDiv.innerHTML = `<p>${data.explanation}</p>`;
+  } catch (error) {
+    console.error("Error fetching explanation:", error);
+    explanationDiv.innerHTML =
+      "<p>Could not connect to the AI server. Is it running?</p>";
+  }
+}
 
 async function bubbleSort() {
   isSorting = true;
-
   for (let i = 0; i < array.length - 1; i++) {
     for (let j = 0; j < array.length - i - 1; j++) {
-      const highlighted = {
-        [j]: "yellow",      //[j] means dynamically set j value
-        [j + 1]: "yellow"
-      };
-      drawArray(highlighted);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      // drawArray({ [j]: "yellow", [j + 1]: "yellow" });
+      await getExplanation({
+        algorithm: "Bubble Sort",
+        step: "Comparing",
+        arrayState: array,
+        context: `Comparing ${array[j]} and ${array[j + 1]}.`,
+      });
+      drawArray({ [j]: "yellow", [j + 1]: "yellow" });
+
+      await new Promise((r) => setTimeout(r, delay));
 
       if (array[j] > array[j + 1]) {
-        [array[j], array[j + 1]] = [array[j + 1], array[j]];  //swapping putting max ele at end of grp
-
-        drawArray({
-          [j]: "green",
-          [j + 1]: "green"
+        await getExplanation({
+          algorithm: "Bubble Sort",
+          step: "Swapping",
+          arrayState: array,
+          context: `Swapping ${array[j]} and ${array[j + 1]}.`,
         });
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+        drawArray({ [j]: "green", [j + 1]: "green" });
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
   }
+  drawArray();
+  await getExplanation({
+    algorithm: "Bubble Sort",
+    step: "Finished",
+    arrayState: array,
+    context: "The array is fully sorted.",
+  });
+  isSorting = false;
 
-  // Highlight final sorted array in blue
   const finalHighlight = {};
   for (let i = 0; i < array.length; i++) {
-    finalHighlight[i] = "blue";
+    finalHighlight[i] = "Gray";
   }
   drawArray(finalHighlight);
 
   isSorting = false;
-
 }
 
-// async function selectionSort() {
-//   isSorting = true;
-//   for (let i = 0; i < array.length - 1; i++) {
-//     let minIndex = i;
-//     for (let j = i + 1; j < array.length; j++) {
-//       if (array[j] < array[minIndex]) {
-//         minIndex = j;
-//       }
-//     }
-//     if (minIndex !== i) {
-//       [array[i], array[minIndex]] = [array[minIndex], array[i]];
-//       drawArray();
-//       await new Promise((resolve) => setTimeout(resolve, 50));
-//     }
-//   }
-//   isSorting = false;
-// }
 async function selectionSort() {
   isSorting = true;
 
@@ -113,9 +159,9 @@ async function selectionSort() {
 
     for (let j = i + 1; j < array.length; j++) {
       const highlight = {
-        [i]: "orange",         // current position
-        [j]: "yellow",         // currently comparing
-        [minIndex]: "green"    // current minimum
+        [i]: "orange", // current position
+        [j]: "yellow", // currently comparing
+        [minIndex]: "green", // current minimum
       };
       drawArray(highlight);
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -127,7 +173,7 @@ async function selectionSort() {
         drawArray({
           [i]: "orange",
           [j]: "yellow",
-          [minIndex]: "green"
+          [minIndex]: "green",
         });
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -139,7 +185,7 @@ async function selectionSort() {
       // Show swap
       drawArray({
         [i]: "red",
-        [minIndex]: "red"
+        [minIndex]: "red",
       });
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -155,23 +201,6 @@ async function selectionSort() {
   isSorting = false;
 }
 
-// async function insertionSort() {
-//   isSorting = true;
-//   for (let i = 1; i < array.length; i++) {
-//     let key = array[i];
-//     let j = i - 1;
-//     while (j >= 0 && array[j] > key) {
-//       array[j + 1] = array[j];
-//       j = j - 1;
-//       drawArray();
-//       await new Promise((resolve) => setTimeout(resolve, 50));
-//     }
-//     array[j + 1] = key;
-//     drawArray();
-//     await new Promise((resolve) => setTimeout(resolve, 50));
-//   }
-//   isSorting = false;
-// }
 async function insertionSort() {
   isSorting = true;
 
@@ -188,9 +217,9 @@ async function insertionSort() {
 
       // Highlight the shift
       drawArray({
-        [j]: "yellow",     // Element being compared
-        [j + 1]: "red",     // Element being shifted
-        [i]: "orange"       // Key
+        [j]: "yellow", // Element being compared
+        [j + 1]: "red", // Element being shifted
+        [i]: "orange", // Key
       });
       await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -214,7 +243,6 @@ async function insertionSort() {
   isSorting = false;
 }
 
-
 async function mergeSort() {
   isSorting = true;
   await mergeSortHelper(0, array.length - 1);
@@ -237,12 +265,15 @@ async function mergeSortHelper(left, right) {
 async function merge(left, mid, right) {
   let n1 = mid - left + 1;
   let n2 = right - mid;
-  let L = [], R = [];
+  let L = [],
+    R = [];
 
   for (let i = 0; i < n1; i++) L.push(array[left + i]);
   for (let j = 0; j < n2; j++) R.push(array[mid + 1 + j]);
 
-  let i = 0, j = 0, k = left;
+  let i = 0,
+    j = 0,
+    k = left;
 
   while (i < n1 && j < n2) {
     // Highlight current range and the two elements being compared
@@ -312,8 +343,8 @@ async function partition(low, high) {
 
   for (let j = low; j < high; j++) {
     const highlight = {
-      [high]: "orange",  // pivot
-      [j]: "yellow",     // current element being compared
+      [high]: "orange", // pivot
+      [j]: "yellow", // current element being compared
     };
 
     if (array[j] < pivot) {
@@ -336,7 +367,7 @@ async function partition(low, high) {
   [array[i + 1], array[high]] = [array[high], array[i + 1]];
 
   const finalHighlight = {
-    [i + 1]: "green",  // pivot placed in correct position
+    [i + 1]: "green", // pivot placed in correct position
     [high]: "red",
   };
   drawArray(finalHighlight);
@@ -345,11 +376,9 @@ async function partition(low, high) {
   return i + 1;
 }
 
-
 // Update button event listeners to match HTML IDs
 
 document.getElementById("generateBtn").addEventListener("click", function () {
-
   if (isSorting) alert("Sorting in progress..."); // Prevent generating a new array while sorting
 
   arrSize = parseInt(document.getElementById("arraySize").value);
@@ -406,6 +435,6 @@ document.getElementById("quick-sort").addEventListener("click", function () {
   }
 });
 
-if(!isSorting) {
+if (!isSorting) {
   generateArray(); // Initial array generation
 }
