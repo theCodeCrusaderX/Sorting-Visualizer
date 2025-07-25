@@ -12,7 +12,6 @@ function generateArray() {
   if (isSorting) return; // Prevent generating a new array while sorting
   hasShownLoadingMessage = false;
 
-
   array = []; // Reset the array
 
   for (let i = 0; i < arrSize; i++) {
@@ -153,23 +152,35 @@ async function selectionSort() {
   for (let i = 0; i < array.length - 1; i++) {
     let minIndex = i;
 
-    // Highlight the current i
     drawArray({ [i]: "orange" });
+    await getExplanation({
+      algorithm: "Selection Sort",
+      step: "Starting new iteration",
+      arrayState: array,
+      context: `Assuming ${array[i]} at index ${i} is the minimum.`,
+    });
     await new Promise((resolve) => setTimeout(resolve, delay));
 
     for (let j = i + 1; j < array.length; j++) {
       const highlight = {
-        [i]: "orange", // current position
-        [j]: "yellow", // currently comparing
-        [minIndex]: "green", // current minimum
+        [i]: "orange",
+        [j]: "yellow",
+        [minIndex]: "green",
       };
       drawArray(highlight);
+
+      await getExplanation({
+        algorithm: "Selection Sort",
+        step: "Comparing",
+        arrayState: array,
+        context: `Comparing ${array[j]} with current minimum ${array[minIndex]}.`,
+      });
+
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       if (array[j] < array[minIndex]) {
         minIndex = j;
 
-        // Re-highlight with updated minIndex
         drawArray({
           [i]: "orange",
           [j]: "yellow",
@@ -180,9 +191,15 @@ async function selectionSort() {
     }
 
     if (minIndex !== i) {
+      await getExplanation({
+        algorithm: "Selection Sort",
+        step: "Swapping",
+        arrayState: array,
+        context: `Swapping ${array[i]} and ${array[minIndex]}.`,
+      });
+
       [array[i], array[minIndex]] = [array[minIndex], array[i]];
 
-      // Show swap
       drawArray({
         [i]: "red",
         [minIndex]: "red",
@@ -191,12 +208,18 @@ async function selectionSort() {
     }
   }
 
-  // Optional: color whole array as sorted
   const finalHighlight = {};
   for (let i = 0; i < array.length; i++) {
     finalHighlight[i] = "blue";
   }
   drawArray(finalHighlight);
+
+  await getExplanation({
+    algorithm: "Selection Sort",
+    step: "Finished",
+    arrayState: array,
+    context: "The array is fully sorted.",
+  });
 
   isSorting = false;
 }
@@ -208,18 +231,29 @@ async function insertionSort() {
     let key = array[i];
     let j = i - 1;
 
-    // Highlight the key being inserted
     drawArray({ [i]: "orange" });
+    await getExplanation({
+      algorithm: "Insertion Sort",
+      step: "Key Selection",
+      arrayState: array,
+      context: `Selected key ${key} at index ${i}.`,
+    });
     await new Promise((resolve) => setTimeout(resolve, delay));
 
     while (j >= 0 && array[j] > key) {
-      array[j + 1] = array[j]; // Shift element right
+      await getExplanation({
+        algorithm: "Insertion Sort",
+        step: "Shifting",
+        arrayState: array,
+        context: `Shifting ${array[j]} to the right.`,
+      });
 
-      // Highlight the shift
+      array[j + 1] = array[j];
+
       drawArray({
-        [j]: "yellow", // Element being compared
-        [j + 1]: "red", // Element being shifted
-        [i]: "orange", // Key
+        [j]: "yellow",
+        [j + 1]: "red",
+        [i]: "orange",
       });
       await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -228,17 +262,29 @@ async function insertionSort() {
 
     array[j + 1] = key;
 
-    // Show insertion of key
+    await getExplanation({
+      algorithm: "Insertion Sort",
+      step: "Insertion",
+      arrayState: array,
+      context: `Inserted key ${key} at position ${j + 1}.`,
+    });
+
     drawArray({ [j + 1]: "green" });
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
-  // Final sorted highlight
   const finalHighlight = {};
   for (let i = 0; i < array.length; i++) {
     finalHighlight[i] = "blue";
   }
   drawArray(finalHighlight);
+
+  await getExplanation({
+    algorithm: "Insertion Sort",
+    step: "Finished",
+    arrayState: array,
+    context: "The array is fully sorted.",
+  });
 
   isSorting = false;
 }
@@ -247,11 +293,19 @@ async function mergeSort() {
   isSorting = true;
   await mergeSortHelper(0, array.length - 1);
   isSorting = false;
+
   const finalHighlight = {};
   for (let i = 0; i < array.length; i++) {
     finalHighlight[i] = "blue";
   }
   drawArray(finalHighlight);
+
+  await getExplanation({
+    algorithm: "Merge Sort",
+    step: "Finished",
+    arrayState: array,
+    context: "The array is fully sorted.",
+  });
 }
 
 async function mergeSortHelper(left, right) {
@@ -271,15 +325,21 @@ async function merge(left, mid, right) {
   for (let i = 0; i < n1; i++) L.push(array[left + i]);
   for (let j = 0; j < n2; j++) R.push(array[mid + 1 + j]);
 
+  await getExplanation({
+    algorithm: "Merge Sort",
+    step: "Merging",
+    arrayState: array,
+    context: `Merging subarrays [${L}] and [${R}].`,
+  });
+
   let i = 0,
     j = 0,
     k = left;
 
   while (i < n1 && j < n2) {
-    // Highlight current range and the two elements being compared
     const highlight = {};
     for (let x = left; x <= right; x++) highlight[x] = "orange";
-    highlight[k] = "green"; // Position where new value will be placed
+    highlight[k] = "green";
 
     drawArray(highlight);
     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -327,6 +387,13 @@ async function quickSort() {
     finalHighlight[i] = "blue";
   }
   drawArray(finalHighlight);
+
+  await getExplanation({
+    algorithm: "Quick Sort",
+    step: "Finished",
+    arrayState: array,
+    context: "The array is fully sorted.",
+  });
 }
 
 async function quickSortHelper(low, high) {
@@ -341,17 +408,30 @@ async function partition(low, high) {
   let pivot = array[high];
   let i = low - 1;
 
+  await getExplanation({
+    algorithm: "Quick Sort",
+    step: "Choosing Pivot",
+    arrayState: array,
+    context: `Pivot selected: ${pivot} at index ${high}.`,
+  });
+
   for (let j = low; j < high; j++) {
     const highlight = {
-      [high]: "orange", // pivot
-      [j]: "yellow", // current element being compared
+      [high]: "orange",
+      [j]: "yellow",
     };
+
+    await getExplanation({
+      algorithm: "Quick Sort",
+      step: "Comparing",
+      arrayState: array,
+      context: `Comparing ${array[j]} with pivot ${pivot}.`,
+    });
 
     if (array[j] < pivot) {
       i++;
       [array[i], array[j]] = [array[j], array[i]];
 
-      // Highlight the swap
       highlight[i] = "red";
       highlight[j] = "red";
 
@@ -363,14 +443,21 @@ async function partition(low, high) {
     }
   }
 
-  // Final pivot swap
   [array[i + 1], array[high]] = [array[high], array[i + 1]];
 
   const finalHighlight = {
-    [i + 1]: "green", // pivot placed in correct position
+    [i + 1]: "green",
     [high]: "red",
   };
   drawArray(finalHighlight);
+
+  await getExplanation({
+    algorithm: "Quick Sort",
+    step: "Placing Pivot",
+    arrayState: array,
+    context: `Placed pivot ${pivot} at index ${i + 1}.`,
+  });
+
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   return i + 1;
@@ -379,7 +466,10 @@ async function partition(low, high) {
 // Update button event listeners to match HTML IDs
 
 document.getElementById("generateBtn").addEventListener("click", function () {
-  if (isSorting) alert("Sorting in progress..."); // Prevent generating a new array while sorting
+  if (isSorting) {
+    alert("Sorting in progress...");
+    return;
+  } // Prevent generating a new array while sorting
 
   arrSize = parseInt(document.getElementById("arraySize").value);
   console.log(arrSize);
