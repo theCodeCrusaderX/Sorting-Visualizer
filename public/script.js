@@ -53,7 +53,6 @@ function drawArray(highlight = {}) {
 // =================================================================
 //  AI INTEGRATION (Calling backend server)
 // =================================================================
-
 async function getExplanation(details) {
   // Get the checkbox element
   const aiToggle = document.getElementById("enableAi");
