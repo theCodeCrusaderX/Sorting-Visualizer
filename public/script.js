@@ -31,13 +31,13 @@ function drawArray(highlight = {}) {
   const barWidth = 25;
   const gap = 8;
   const numBars = arrSize;
-  const totalBarsWidth = numBars * barWidth + (numBars - 1) * gap;
-  const leftMargin = (canvas.width - totalBarsWidth) / 2;
+  const totalBarsWidth = numBars * barWidth + (numBars - 1) * gap;  //total width of all bars including gaps
+  const leftMargin = (canvas.width - totalBarsWidth) / 2;  // Center the bars horizontally
 
   for (let index = 0; index < arrSize; index++) {
     const value = array[index];
-    const barHeight = 3.5 * value;
-    const x = leftMargin + index * (barWidth + gap);
+    const barHeight = 3.5 * value;  
+    const x = leftMargin + index * (barWidth + gap);  
     const y = canvas.height - barHeight;
 
     // Draw bar
@@ -56,7 +56,7 @@ function drawArray(highlight = {}) {
 async function getExplanation(details) {
   // Get the checkbox element
   const aiToggle = document.getElementById("enableAi");
-  console.log("AI Toggle checked:", aiToggle.checked);
+  // console.log("AI Toggle checked:", aiToggle.checked);
 
   // If the checkbox is not checked, clear the text and stop
   if (!aiToggle.checked) {
@@ -99,8 +99,10 @@ async function getExplanation(details) {
   }
 }
 
+//select minimum and swap them
 async function bubbleSort() {
   isSorting = true;
+
   for (let i = 0; i < array.length - 1; i++) {
     for (let j = 0; j < array.length - i - 1; j++) {
       // drawArray({ [j]: "yellow", [j + 1]: "yellow" });
@@ -145,6 +147,7 @@ async function bubbleSort() {
   isSorting = false;
 }
 
+//put the max at last by adjacent swap
 async function selectionSort() {
   isSorting = true;
 
@@ -160,6 +163,8 @@ async function selectionSort() {
     });
     await new Promise((resolve) => setTimeout(resolve, delay));
 
+
+    //finding the min term
     for (let j = i + 1; j < array.length; j++) {
       const highlight = {
         [i]: "orange",
